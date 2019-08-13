@@ -82,10 +82,12 @@ describe("Earley Parser", () => {
     const errors: string[] = [];
     rules.buildSet.check(errors);
 
-    expect(errors.length).toBe(0);
     for (var i = 0; i < errors.length; i++) {
       // dbg.printf("%s\n", errors[i]);
+      console.log(errors[i]);
     }
+
+    expect(errors.length).toBe(0);
 
     rules.buildSet.finalize();
 
@@ -93,7 +95,12 @@ describe("Earley Parser", () => {
 
     // Parse the program into abstract syntax tree.
 
-    const p: P = parser.parse("1 + 3 * 4 + 2");
+    const p: P = parser.parse("1 + 5 * 3 * 4 + 2");
+
+    for (let i = 0; i < parser.errors.length; i++) {
+      // dbg.printf("%s\n", errors[i]);
+      expect(parser.errors[i]).toBe("");
+    }
 
     expect(parser.errors.length).toBe(0);
     expect(p).toBeTruthy();
