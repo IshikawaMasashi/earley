@@ -3,7 +3,6 @@ import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import { VirtualList, ItemStyle } from "../../src";
 import GetApp from "@material-ui/icons/GetApp";
 import Build from "@material-ui/icons/Build";
 
@@ -65,20 +64,6 @@ function Home() {
     setItemSize(newValue < 18 ? 18 : newValue);
   };
 
-  const renderItem = ({
-    style,
-    index
-  }: {
-    style: ItemStyle;
-    index: number;
-  }) => {
-    return (
-      <div className="Row" style={style} key={index}>
-        Row #{index}
-      </div>
-    );
-  };
-
   return (
     <div className={classes.root}>
       <Grid className={classes.grid} container spacing={2} alignItems="center">
@@ -106,14 +91,6 @@ function Home() {
             react-virtual-list
           </Typography>
         </div>
-        <VirtualList
-          width="auto"
-          height={400}
-          itemCount={100000}
-          renderItem={renderItem}
-          itemSize={itemSize}
-          className="VirtualList"
-        />
       </Paper>
       <Paper className={classes.paper} elevation={0}>
         <div className={classes.label}>

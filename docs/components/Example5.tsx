@@ -4,7 +4,6 @@ import Grid from "@material-ui/core/Grid";
 import Slider from "@material-ui/lab/Slider";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import { VirtualList, ItemStyle } from "../../src";
 import VolumeDown from "@material-ui/icons/VolumeDown";
 import VolumeUp from "@material-ui/icons/VolumeUp";
 import Input from "@material-ui/core/Input";
@@ -60,20 +59,6 @@ function Example5({ title }: Props) {
     }
   };
 
-  const renderItem = ({
-    style,
-    index
-  }: {
-    style: ItemStyle;
-    index: number;
-  }) => {
-    return (
-      <div className="Row" style={style} key={index}>
-        Row #{index}
-      </div>
-    );
-  };
-
   return (
     <div className={classes.root}>
       <Grid container spacing={2}>
@@ -100,15 +85,6 @@ function Example5({ title }: Props) {
         </Grid>
         <Grid item></Grid>
       </Grid>
-      <VirtualList
-        width="auto"
-        height={400}
-        itemCount={itemCount}
-        renderItem={renderItem}
-        itemSize={itemSize}
-        className="VirtualList"
-        scrollOffset={Number(value)}
-      />
     </div>
   );
 }

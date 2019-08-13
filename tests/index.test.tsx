@@ -1,11 +1,120 @@
 // import * as React from "react";
 // import { render } from "react-dom";
 // import { VirtualList, ALIGNMENT } from "../src";
+import { RuleParser, Location } from "../src";
+import EarleyParser from "../src";
 // // import { ALIGNMENT } from "../src/components/constants";
+
+class T {
+  constructor(readonly location: Location, readonly value: string) {}
+  public toString() {
+    const value = this.value;
+    return value;
+  }
+  public toNumber() {
+    const value = this.value;
+    return Number(value);
+  }
+}
+
+class M {
+  constructor(readonly location: Location, readonly m: M, readonly t: T) {}
+
+  public toString(): string {
+    const { m, t } = this;
+    return `${m.toString()}*${t.toString()}`;
+  }
+  public toNumber(): number {
+    const { m, t } = this;
+    return m.toNumber() * t.toNumber();
+  }
+}
+
+class S {
+  constructor(readonly location: Location, readonly s: S, readonly m: M) {}
+
+  public toString(): string {
+    const { s, m } = this;
+    return `${s.toString()}+${m.toString()}`;
+  }
+  public toNumber(): number {
+    const { s, m } = this;
+    return s.toNumber() + m.toNumber();
+  }
+}
+
+class P {
+  constructor(readonly location: Location, readonly s: S) {}
+
+  public toString() {
+    const s = this.s;
+    return s.toString();
+  }
+  public toNumber() {
+    const s = this.s;
+    return s.toNumber();
+  }
+}
 
 describe("Earley Parser", () => {
   it("keeps sticky indices rendered when scrolling", () => {
-    expect(true).toBeTruthy();
+    const rules = new RuleParser({ printf: () => {} });
+    rules.addRule("start: P");
+    rules.addRule(
+      "P: S",
+      (args: any, location: Location) => new P(location, args[0])
+    );
+    rules.addRule(
+      "S: S '\\+' M",
+      (args: any, location: Location) => new S(location, args[0], args[2])
+    );
+    rules.addRule("S: M");
+    rules.addRule(
+      "M: M '\\*' T",
+      (args: any, location: Location) =>
+        new M(location, args[0], new T(location, args[2]))
+    );
+    rules.addRule(
+      "M: T",
+      (args: any, location: Location) => new T(location, args[0])
+    );
+    rules.addToken("T", "[1-4]");
+    const errors: string[] = [];
+    rules.buildSet.check(errors);
+
+    expect(errors.length).toBe(0);
+    for (var i = 0; i < errors.length; i++) {
+      // dbg.printf("%s\n", errors[i]);
+    }
+
+    rules.buildSet.finalize();
+
+    const parser = new EarleyParser(rules.buildSet, { printf: () => {} });
+
+    // Parse the program into abstract syntax tree.
+
+    const p: P = parser.parse("1 + 3 * 4 + 2");
+
+    expect(parser.errors.length).toBe(0);
+    expect(p).toBeTruthy();
+
+    expect(p.toString()).toBe("1+3*4+2");
+    expect(p.toNumber()).toBe(15);
+    // function replacer(key: string, value: any) {
+    //   if (key == "location") {
+    //     return undefined;
+    //   }
+    //   return value;
+    // }
+    // expect(JSON.stringify(p, replacer, " ")).toBe("Test");
+
+    function replacer(key: string, value: any) {
+      if (key == "location") {
+        return undefined;
+      }
+      return value;
+    }
+    console.log(JSON.stringify(p, replacer, " "));
   });
 });
 
