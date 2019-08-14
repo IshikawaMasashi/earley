@@ -1,11 +1,10 @@
-﻿// import { dbg } from "../qbasic/qb";
-import { Tokenizer } from './Tokenizer';
-import { RuleSet } from './RuleSet';
-import { EarleyItem } from './EarleyItem';
-import Location from './Location';
-import { Rule } from './Rule';
-import { Token } from './Token';
-import IDebugConsole from './IDebugConsole';
+﻿import { Tokenizer } from "./Tokenizer";
+import { RuleSet } from "./RuleSet";
+import { EarleyItem } from "./EarleyItem";
+import Location from "./Location";
+import { Rule } from "./Rule";
+import { Token } from "./Token";
+import IDebugConsole from "./IDebugConsole";
 /**
   The Earley parser is like the proverbial tortoise. Its simplicity lets slowly
   but surely it chug through any grammar you throw its way.
@@ -56,7 +55,7 @@ export class EarleyParser {
 
   parse(text: string) {
     const dbg = this.dbg;
-    var states = [[new EarleyItem(this.rules['_start'][0], 0, 0)]];
+    var states = [[new EarleyItem(this.rules["_start"][0], 0, 0)]];
 
     var line = 0;
     var position = 0;
@@ -69,10 +68,10 @@ export class EarleyParser {
       var token = this.tokenizer.nextToken(line, position);
       if (token === null) {
         this.errors.push(`Bad token at ${line}:${position}\n`);
-        dbg.printf('Bad token!\n');
+        dbg.printf("Bad token!\n");
         return null;
       } else if (this.debug) {
-        dbg.printf('Got token %s at %s\n', token, token.location);
+        dbg.printf("Got token %s at %s\n", token, token.location);
       }
       this.location = token.location;
 
@@ -205,11 +204,11 @@ export class EarleyParser {
       return;
     }
     var items = states[index];
-    dbg.printf('State [%d]\n', index);
+    dbg.printf("State [%d]\n", index);
     for (var i = 0; i < items.length; i++) {
-      dbg.printf('%s\n', items[i]);
+      dbg.printf("%s\n", items[i]);
     }
-    dbg.printf('\n');
+    dbg.printf("\n");
   }
 
   // ----------------------------------------------------------------------

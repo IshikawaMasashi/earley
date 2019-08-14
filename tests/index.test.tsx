@@ -18,28 +18,57 @@ class T {
 }
 
 class M {
-  constructor(readonly location: Location, readonly m: M, readonly t: T) {}
+  constructor(
+    readonly location: Location,
+    readonly mOrT: M | T,
+    readonly t?: T
+  ) {}
 
   public toString(): string {
-    const { m, t } = this;
-    return `${m.toString()}*${t.toString()}`;
+    const { mOrT, t } = this;
+    // if (mOrT instanceof T && t) {
+    //   return `${mOrT.toString()}`;
+    // }
+    // return `${mOrT.toString()}*${t.toString()}`;
+
+    if (t) {
+      return `${mOrT.toString()}*${t.toString()}`;
+    }
+    return `${mOrT.toString()}`;
   }
   public toNumber(): number {
-    const { m, t } = this;
-    return m.toNumber() * t.toNumber();
+    const { mOrT, t } = this;
+    // if (mOrT instanceof T && t) {
+    //   return mOrT.toNumber();
+    // }
+    // return mOrT.toNumber() * t.toNumber();
+    if (t) {
+      return mOrT.toNumber() * t.toNumber();
+    }
+    return mOrT.toNumber();
   }
 }
 
 class S {
-  constructor(readonly location: Location, readonly s: S, readonly m: M) {}
+  constructor(
+    readonly location: Location,
+    readonly sOrM: S | M,
+    readonly m?: M
+  ) {}
 
   public toString(): string {
-    const { s, m } = this;
-    return `${s.toString()}+${m.toString()}`;
+    const { sOrM, m } = this;
+    if (m) {
+      return `${sOrM.toString()}+${m.toString()}`;
+    }
+    return `${sOrM.toString()}`;
   }
   public toNumber(): number {
-    const { s, m } = this;
-    return s.toNumber() + m.toNumber();
+    const { sOrM, m } = this;
+    if (m) {
+      return sOrM.toNumber() + m.toNumber();
+    }
+    return sOrM.toNumber();
   }
 }
 
@@ -57,34 +86,65 @@ class P {
 }
 
 describe("Earley Parser", () => {
-  it("keeps sticky indices rendered when scrolling", () => {
+  it("Example 1", () => {
     const rules = new RuleParser({ printf: () => {} });
+
+    // <P> ::= <S>      # the start rule
+    // <S> ::= <S> "+" <M> | <M>
+    // <M> ::= <M> "*" <T> | <T>
+    // <T> ::= "1" | "2" | "3" | "4" | "5"
+
     rules.addRule("start: P");
     rules.addRule(
       "P: S",
-      (args: any, location: Location) => new P(location, args[0])
+      (args: [S], location: Location) => new P(location, args[0])
     );
     rules.addRule(
       "S: S '\\+' M",
-      (args: any, location: Location) => new S(location, args[0], args[2])
+      (args: [S, string, M], location: Location) =>
+        new S(location, args[0], args[2])
     );
-    rules.addRule("S: M");
+    rules.addRule(
+      "S: M",
+      (args: [M], location: Location) => new S(location, args[0])
+    );
     rules.addRule(
       "M: M '\\*' T",
-      (args: any, location: Location) =>
-        new M(location, args[0], new T(location, args[2]))
+      (args: [M, string, T], location: Location) =>
+        new M(location, args[0], args[2])
     );
     rules.addRule(
       "M: T",
-      (args: any, location: Location) => new T(location, args[0])
+      (args: [T], location: Location) => new M(location, args[0])
     );
-    rules.addToken("T", "[1-4]");
+    rules.addRule(
+      "T: '1'",
+      (args: [string], location: Location) => new T(location, args[0])
+    );
+    rules.addRule(
+      "T: '2'",
+      (args: [string], location: Location) => new T(location, args[0])
+    );
+    rules.addRule(
+      "T: '3'",
+      (args: [string], location: Location) => new T(location, args[0])
+    );
+    rules.addRule(
+      "T: '4'",
+      (args: [string], location: Location) => new T(location, args[0])
+    );
+    rules.addRule(
+      "T: '5'",
+      (args: [string], location: Location) => new T(location, args[0])
+    );
+
     const errors: string[] = [];
     rules.buildSet.check(errors);
 
     for (var i = 0; i < errors.length; i++) {
       // dbg.printf("%s\n", errors[i]);
-      console.log(errors[i]);
+      // console.log(errors[i]);
+      expect(errors[i]).toBe("");
     }
 
     expect(errors.length).toBe(0);
@@ -94,7 +154,6 @@ describe("Earley Parser", () => {
     const parser = new EarleyParser(rules.buildSet, { printf: () => {} });
 
     // Parse the program into abstract syntax tree.
-
     const p: P = parser.parse("1 + 5 * 3 * 4 + 2");
 
     for (let i = 0; i < parser.errors.length; i++) {
@@ -105,15 +164,8 @@ describe("Earley Parser", () => {
     expect(parser.errors.length).toBe(0);
     expect(p).toBeTruthy();
 
-    expect(p.toString()).toBe("1+3*4+2");
-    expect(p.toNumber()).toBe(15);
-    // function replacer(key: string, value: any) {
-    //   if (key == "location") {
-    //     return undefined;
-    //   }
-    //   return value;
-    // }
-    // expect(JSON.stringify(p, replacer, " ")).toBe("Test");
+    expect(p.toString()).toBe("1+5*3*4+2");
+    expect(p.toNumber()).toBe(63);
 
     function replacer(key: string, value: any) {
       if (key == "location") {
